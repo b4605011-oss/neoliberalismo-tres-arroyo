@@ -122,13 +122,20 @@
     </div>
   </section>
 
-  <!-- VIDEO DE LA MUESTRA (se ve en las dos pestañas) -->
+   <!-- LA MUESTRA: carrete de fotos + video (se ve en las dos pestañas) -->
   <section class="mt-8">
-    <h2 class="font-serif font-bold text-xl text-navy px-1">La muestra en Tres Arroyos</h2>
-    <p class="text-slate-600 text-sm mt-1 px-1">Así presentamos este proyecto en nuestra ciudad.</p>
+    <h2 class="font-serif font-bold text-xl text-navy px-1">La muestra fotográfica</h2>
+    <!-- ✏️ Podés cambiar esta frase por el texto de presentación que usaron en la muestra -->
+    <p class="text-slate-600 text-sm mt-1 px-1">Las fotos que expusimos en Tres Arroyos. Deslizá para verlas y tocá una para agrandarla.</p>
+    <div id="carrete" class="mt-3 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3"></div>
+    <p id="carrete-cuenta" class="text-center text-xs text-slate-500"></p>
+
+    <h2 class="font-serif font-bold text-xl text-navy px-1 mt-8">Así fue la muestra</h2>
+    <p class="text-slate-600 text-sm mt-1 px-1">El video de la muestra en nuestra ciudad.</p>
     <div id="video-box" class="mt-3 rounded-xl overflow-hidden border border-slate-300 bg-ink shadow-sm aspect-video"></div>
     <p id="video-link" class="text-center text-sm mt-2 hidden"><a class="text-navy underline" target="_blank" rel="noopener">¿No se ve? Abrilo en YouTube</a></p>
   </section>
+</main>
 </main>
 
 <footer class="text-center text-xs text-slate-500 py-8 px-4">
@@ -488,6 +495,75 @@ const VIDEO = { youtubeId: "Pjc9Y2HEm4s", driveId: "", archivo: "", vertical: tr
   else if (VIDEO.driveId)   box.innerHTML = iframe(`https://drive.google.com/file/d/${VIDEO.driveId}/preview`);
   else if (VIDEO.archivo)   box.innerHTML = `<video src="${VIDEO.archivo}" controls playsinline preload="metadata" class="w-full h-full"></video>`;
   else box.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white/70 text-sm text-center px-6">Acá va el video de la muestra.<br>Pegá el código en la constante VIDEO del archivo.</div>';
+})();
+
+/* =====================================================================
+   7) CARRETE DE FOTOS DE LA MUESTRA  ✏️✏️✏️
+   - Guardá las fotos en la carpeta  fotos/muestra/  (junto al index.html) y subila a GitHub.
+   - Achicalas antes: unos 1000 px de ancho y menos de 250 KB cada una (carga rápida con datos móviles).
+   - Cada foto es una línea { ... }. Copiá y pegá una línea para agregar otra (con coma al final).
+   - titulo y autor se ven debajo de la foto; texto es lo que expusieron junto a esa foto (puede ir vacío "").
+   - Si una foto no existe, simplemente no se muestra. El orden del carrete es el de esta lista.
+   ===================================================================== */
+const FOTOS_MUESTRA = [
+  {
+    src: "fotos/muestra/foto-01.jpeg",
+    titulo: "Muestra fotográfica: El impacto del neoliberalismo en Tres Arroyos",
+    autor: "CENS Nº 451 – 3ro 1ra, 3ro 2da, 3ro 4ta y 3ro 5ta",
+    texto: "Afiche de presentación de la muestra, realizada por los alumnos de 3er año del CENS Nº 451 de Tres Arroyos."
+  },
+  {
+    src: "fotos/muestra/foto-02.jpeg",
+    titulo: "Muestra de 3ro 2da",
+    autor: "Alumnos de 3ro 2da",
+    texto: "Panel con el plano de la ciudad, códigos QR y fotos de edificios históricos y fábricas locales, como Rossi Hermanos y la fábrica metalúrgica Mustad."
+  },
+  {
+    src: "fotos/muestra/foto-03.jpeg",
+    titulo: "Tres Arroyos: desocupación",
+    autor: "Alumnos de 3ro 4ta",
+    texto: "Panel sobre la desocupación, con el plano de la ciudad y fotos de la estación de ferrocarril, la Fábrica Buque, La Previsión y la Fábrica Stilart."
+  },
+  {
+    src: "fotos/muestra/foto-04.jpeg",
+    titulo: "Fábricas e industria local",
+    autor: "Alumnos de 3ro 1ra",
+    texto: "Panel con el plano de la ciudad y fotos históricas de fábricas, entre ellas la publicidad \"A través de un siglo\" de Ambe y la zona de Molino Mayolas."
+  },
+  {
+    src: "fotos/muestra/foto-05.jpeg",
+    titulo: "Plano de la ciudad de Tres Arroyos",
+    autor: "Alumnos de 3ro 5ta",
+    texto: "Panel con el plano de la ciudad, lugares de interés, la cooperativa de trabajo Mustad, el ferrocarril y fotos de edificios históricos."
+  }
+];
+
+(function montarCarrete() {
+  const box = document.getElementById('carrete');
+  const cuenta = document.getElementById('carrete-cuenta');
+  const actualizar = () => {
+    const n = box.children.length;
+    cuenta.textContent = n ? `${n} fotos · deslizá para ver más →` : '';
+  };
+  FOTOS_MUESTRA.filter(f => f && f.src).forEach(f => {
+    const fig = document.createElement('figure');
+    fig.className = 'snap-center shrink-0 w-72 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden';
+    const img = document.createElement('img');
+    img.src = f.src; img.alt = f.titulo || ''; img.loading = 'lazy';
+    img.className = 'w-full h-64 object-cover cursor-zoom-in bg-slate-100';
+    const pieCompleto = [f.titulo, f.autor].filter(Boolean).join(' — ') + (f.texto ? '. ' + f.texto : '');
+    img.onclick = () => ampliar(f.src, pieCompleto);
+    img.onerror = () => { fig.remove(); actualizar(); };
+    const cap = document.createElement('figcaption');
+    cap.className = 'p-3';
+    cap.innerHTML = '<p class="font-serif font-bold text-navy leading-snug"></p><p class="text-xs text-slate-500 mt-0.5"></p><p class="text-sm text-slate-700 mt-2 line-clamp-3"></p>';
+    cap.children[0].textContent = f.titulo || '';
+    cap.children[1].textContent = f.autor || '';
+    cap.children[2].textContent = f.texto || '';
+    fig.append(img, cap);
+    box.appendChild(fig);
+  });
+  actualizar();
 })();
 
 /* Vista inicial */
