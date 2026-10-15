@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Neoliberalismo en Tres Arroyos </title>
+
+<!-- Librerías por CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: { navy:'#14284B', celeste:'#6CB4E4', brass:'#B8892B', paper:'#F6F7F9', ink:'#1B1F27' },
+      fontFamily: { serif:['"Source Serif 4"','Georgia','serif'], sans:['"Public Sans"','system-ui','sans-serif'] }
+    }}
+  }
+</script>
+<style>
+  body { background:#F6F7F9; }
+  #map { height: 58vh; min-height: 320px; z-index: 0; }
+  .pin { width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.45); }
+  .tab-on { background:#14284B; color:#fff; }
+  .tab-off { background:transparent; color:#14284B; }
+  #modal-card { animation: sheet .22s ease-out; }
+  @keyframes sheet { from { transform: translateY(24px); opacity:0 } to { transform:none; opacity:1 } }
+  @media (prefers-reduced-motion: reduce) { #modal-card { animation:none } }
+</style>
+</head>
+
+<body class="font-sans text-ink antialiased">
+
+<!-- ENCABEZADO -->
+<header class="bg-navy text-white border-b-4 border-celeste">
+  <div class="max-w-3xl mx-auto px-5 py-7 text-center">
+    <!-- ✏️ LOGO: guardá el logo en la MISMA carpeta que este archivo con el nombre  logo-cens451.png
+         (si tiene otro nombre o formato, cambialo en src="..."). Si no lo encuentra, muestra un cuadro vacío. -->
+    <div class="mx-auto w-24 h-24 rounded-2xl shadow-md flex items-center justify-center overflow-hidden">
+      <img src="logo-cens451.jpg" alt="Logo CENS 451" class="max-w-full max-h-full object-contain p-1"
+           onerror="this.remove(); document.getElementById('logo-vacio').classList.remove('hidden')">
+      <span id="logo-vacio" class="hidden text-navy text-xs font-semibold px-2">Aquí va el logo</span>
+    </div>
+    <p class="text-celeste text-sm mt-4">CENS 451 · Tres Arroyos</p>
+    <h1 class="font-serif font-bold text-3xl sm:text-4xl leading-tight mt-2">Neoliberalismo en Tres Arroyos</h1>
+    <p class="text-white/75 text-sm mt-3">Cómo las políticas de los años 90 se sintieron en nuestra ciudad.</p>
+  </div>
+</header>
+
+<!-- PESTAÑAS -->
+<nav class="sticky top-0 z-[1000] bg-paper/95 backdrop-blur border-b border-slate-200">
+  <div class="max-w-3xl mx-auto p-2 grid grid-cols-2 gap-2" role="tablist">
+    <button id="tab-btn-1" role="tab" aria-selected="true"  class="tab-on  rounded-lg py-3 px-2 text-sm font-semibold transition">¿Dónde estamos?</button>
+    <button id="tab-btn-2" role="tab" aria-selected="false" class="tab-off rounded-lg py-3 px-2 text-sm font-semibold transition">Mapa Interactivo de Empresas</button>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-3 sm:px-5 py-4">
+
+  <!-- Texto de cada vista (cambia según la pestaña) -->
+  <section id="view-1" class="mb-3 px-1">
+    <h2 class="font-serif font-bold text-xl text-navy">Del sur bonaerense a La Plata</h2>
+    <!-- ✏️ EDITÁ ESTE TEXTO -->
+    <p class="text-slate-600 text-sm mt-1">Somos de Tres Arroyos, en el sur de la Provincia de Buenos Aires. Viajamos hasta La Plata para contar nuestra investigación. La línea marca el recorrido de la delegación.</p>
+    <p id="distancia" class="text-sm font-semibold text-navy mt-2"></p>
+  </section>
+
+  <section id="view-2" class="mb-3 px-1 hidden">
+    <h2 class="font-serif font-bold text-xl text-navy">Empresas de la época neoliberal</h2>
+    <p class="text-slate-600 text-sm mt-1">Tocá un punto del mapa para conocer la historia de cada empresa.</p>
+  </section>
+
+  <!-- MAPA ÚNICO (se reutiliza en las dos pestañas) -->
+  <div class="rounded-xl overflow-hidden border border-slate-300 shadow-sm">
+    <div id="map" aria-label="Mapa interactivo"></div>
+  </div>
+
+  <!-- ¿QUÉ HUBIERA PASADO?: solo se ve en la pestaña 2 -->
+  <section id="simulacion" class="hidden mt-8">
+    <div class="rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div class="bg-navy text-white px-5 py-4 border-l-8 border-brass">
+        <h2 class="font-serif font-bold text-2xl">¿Qué hubiera pasado?</h2>
+        <p class="text-white/75 text-sm mt-1">Nuestras hipótesis sobre cómo sería Tres Arroyos hoy.</p>
+      </div>
+
+      <!-- ✏️✏️✏️ ESPACIO PARA ESCRIBIR ✏️✏️✏️
+           Reemplacen los textos de abajo por lo que escriban los chicos.
+           - Cada bloque <article> ... </article> es una idea. Copien y peguen uno para agregar más.
+           - Cambien el <h3> (título) y el/los <p> (texto). Pueden poner varios párrafos. -->
+      <div class="p-5 space-y-5">
+        <p class="text-slate-700 text-[15px] leading-relaxed">
+          Escribí acá una introducción: de qué trata esta reflexión y qué se preguntaron los chicos.
+        </p>
+
+        <article class="border-l-4 border-celeste pl-4">
+          <h3 class="font-serif font-bold text-lg text-navy">Título de la primera idea</h3>
+          <p class="text-slate-700 text-[15px] leading-relaxed mt-1">Escribí acá el texto de la primera hipótesis.</p>
+        </article>
+
+        <article class="border-l-4 border-celeste pl-4">
+          <h3 class="font-serif font-bold text-lg text-navy">Título de la segunda idea</h3>
+          <p class="text-slate-700 text-[15px] leading-relaxed mt-1">Escribí acá el texto de la segunda hipótesis.</p>
+        </article>
+
+        <article class="border-l-4 border-celeste pl-4">
+          <h3 class="font-serif font-bold text-lg text-navy">Título de la tercera idea</h3>
+          <p class="text-slate-700 text-[15px] leading-relaxed mt-1">Escribí acá el texto de la tercera hipótesis.</p>
+        </article>
+
+        <div class="rounded-lg bg-paper border border-slate-200 p-4">
+          <h3 class="font-serif font-bold text-lg text-navy">Nuestra conclusión</h3>
+          <p class="text-slate-700 text-[15px] leading-relaxed mt-1">Escribí acá el cierre del proyecto.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO DE LA MUESTRA (se ve en las dos pestañas) -->
+  <section class="mt-8">
+    <h2 class="font-serif font-bold text-xl text-navy px-1">La muestra en Tres Arroyos</h2>
+    <p class="text-slate-600 text-sm mt-1 px-1">Así presentamos este proyecto en nuestra ciudad.</p>
+    <div id="video-box" class="mt-3 rounded-xl overflow-hidden border border-slate-300 bg-ink shadow-sm aspect-video"></div>
+  </section>
+</main>
+
+<footer class="text-center text-xs text-slate-500 py-8 px-4">
+  CENS 451 · Tres Arroyos, Buenos Aires · Proyecto presentado en La Plata
+</footer>
+
+<!-- MODAL DE EMPRESA -->
+<div id="modal" class="hidden fixed inset-0 z-[2000] flex items-end sm:items-center justify-center bg-ink/60 p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="m-nombre">
+  <div id="modal-card" class="bg-white w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl">
+    <div class="bg-navy text-white px-5 py-4 flex items-start justify-between gap-3 border-b-4 border-celeste">
+      <h3 id="m-nombre" class="font-serif font-bold text-xl leading-snug"></h3>
+      <button id="m-cerrar" aria-label="Cerrar" class="shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-xl leading-none">&times;</button>
+    </div>
+    <div class="p-5">
+      <p id="m-desc" class="text-slate-700 text-[15px] leading-relaxed"></p>
+      <div class="mt-5 grid gap-3">
+        <a id="m-fotos" target="_blank" rel="noopener" class="block text-center rounded-lg bg-navy text-white font-semibold py-3 hover:brightness-125 transition">Ver fotos</a>
+        <a id="m-docs"  target="_blank" rel="noopener" class="block text-center rounded-lg border-2 border-navy text-navy font-semibold py-3 hover:bg-navy hover:text-white transition">Ver documentos de la investigación</a>
+        <a id="m-web"   target="_blank" rel="noopener" class="block text-center rounded-lg bg-celeste/25 text-navy font-semibold py-3 hover:bg-celeste/40 transition">Leer la historia de la empresa</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   1) PUNTOS PRINCIPALES (pestaña "¿Dónde estamos?")
+   ===================================================================== */
+const TRES_ARROYOS = { lat: -38.3739, lng: -60.2798 };
+const LA_PLATA     = { lat: -34.9214, lng: -57.9545 };
+
+/* =====================================================================
+   2) EMPRESAS  ✏️✏️✏️  ACÁ EDITÁS TODO LO DE LAS EMPRESAS  ✏️✏️✏️
+   - lat / lng : coordenadas (en Google Maps: clic derecho sobre el lugar
+                 y copiá los dos números; el primero es lat, el segundo lng).
+   - nombre / descripcion : textos que aparecen en la ventana.
+   - fotos : pegá el link de la carpeta de Google Drive con las fotos.
+   - docs  : pegá el link de la carpeta/PDF de Google Drive.
+   - web   : pegá el link de la página con la historia de la empresa.
+   Para agregar otra empresa, copiá un bloque { ... }, y ponele coma al final.
+   ===================================================================== */
+const EMPRESAS = [
+  {
+    nombre: "Empresa de ejemplo 1",
+    descripcion: "Escribí acá qué hacía la empresa, cuántas personas empleaba, cuándo cerró y por qué. Reemplazá este texto por los datos de la investigación.",
+    lat: -38.3739, lng: -60.2798,
+    fotos: "https://drive.google.com/PEGAR_AQUI_LINK_FOTOS_1",
+    docs:  "https://drive.google.com/PEGAR_AQUI_LINK_DOCUMENTOS_1",
+    web:   "https://PEGAR_AQUI_LINK_WEB_1"
+  },
+  {
+    nombre: "Empresa de ejemplo 2",
+    descripcion: "Escribí acá la historia de la segunda empresa: su origen, su momento de mayor actividad y qué pasó durante los años 90.",
+    lat: -38.3690, lng: -60.2650,
+    fotos: "https://drive.google.com/PEGAR_AQUI_LINK_FOTOS_2",
+    docs:  "https://drive.google.com/PEGAR_AQUI_LINK_DOCUMENTOS_2",
+    web:   "https://PEGAR_AQUI_LINK_WEB_2"
+  },
+  {
+    nombre: "Empresa de ejemplo 3",
+    descripcion: "Escribí acá la historia de la tercera empresa y cómo impactó en las familias y en el trabajo de Tres Arroyos.",
+    lat: -38.3810, lng: -60.2900,
+    fotos: "https://drive.google.com/PEGAR_AQUI_LINK_FOTOS_3",
+    docs:  "https://drive.google.com/PEGAR_AQUI_LINK_DOCUMENTOS_3",
+    web:   "https://PEGAR_AQUI_LINK_WEB_3"
+  }
+];
+
+/* =====================================================================
+   3) MAPA
+   ===================================================================== */
+const map = L.map('map', { scrollWheelZoom: false });
+/* ✏️ CLAVE DE CARTO: pegá entre las comillas la clave gratuita que te mandan por mail
+   (se pide en https://carto.com/basemaps/apikey). Mientras esté vacía, el mapa usa OpenStreetMap,
+   que solo funciona cuando la página ya está publicada (por ejemplo en Vercel). */
+const CARTO_KEY = "cb1_4l0c_1_1353ae242d312bb80b12db12";
+
+if (CARTO_KEY) {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=' + CARTO_KEY, {
+    maxZoom: 19, subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(map);
+} else {
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+}
+
+const pin = color => L.divIcon({
+  className: '', html: `<div class="pin" style="background:${color}"></div>`,
+  iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -12]
+});
+
+/* --- Capa 1: ubicación provincial --- */
+const capaProvincia = L.layerGroup();
+L.marker([TRES_ARROYOS.lat, TRES_ARROYOS.lng], { icon: pin('#14284B') })
+  .bindPopup('<b>Nuestra Escuela (CENS 451)</b>').addTo(capaProvincia);
+L.marker([LA_PLATA.lat, LA_PLATA.lng], { icon: pin('#B8892B') })
+  .bindPopup('<b>Lugar de la presentación</b>').addTo(capaProvincia);
+L.polyline(
+  [[TRES_ARROYOS.lat, TRES_ARROYOS.lng], [LA_PLATA.lat, LA_PLATA.lng]],
+  { color: '#14284B', weight: 4, dashArray: '10 8', opacity: .85 }
+).addTo(capaProvincia);
+
+/* Distancia en línea recta (fórmula de Haversine) */
+const km = (() => {
+  const R = 6371, rad = d => d * Math.PI / 180;
+  const dLat = rad(LA_PLATA.lat - TRES_ARROYOS.lat), dLng = rad(LA_PLATA.lng - TRES_ARROYOS.lng);
+  const a = Math.sin(dLat/2)**2 + Math.cos(rad(TRES_ARROYOS.lat)) * Math.cos(rad(LA_PLATA.lat)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+})();
+document.getElementById('distancia').textContent = `Distancia en línea recta: unos ${Math.round(km)} km.`;
+
+/* --- Capa 2: empresas --- */
+const capaEmpresas = L.layerGroup();
+EMPRESAS.forEach(e => {
+  L.marker([e.lat, e.lng], { icon: pin('#C0392B'), title: e.nombre })
+    .on('click', () => abrirModal(e))
+    .addTo(capaEmpresas);
+});
+
+/* =====================================================================
+   4) PESTAÑAS
+   ===================================================================== */
+function mostrarPestana(n) {
+  const uno = n === 1;
+  document.getElementById('view-1').classList.toggle('hidden', !uno);
+  document.getElementById('view-2').classList.toggle('hidden', uno);
+  document.getElementById('simulacion').classList.toggle('hidden', uno);
+
+  const b1 = document.getElementById('tab-btn-1'), b2 = document.getElementById('tab-btn-2');
+  b1.className = (uno ? 'tab-on' : 'tab-off') + ' rounded-lg py-3 px-2 text-sm font-semibold transition';
+  b2.className = (uno ? 'tab-off' : 'tab-on') + ' rounded-lg py-3 px-2 text-sm font-semibold transition';
+  b1.setAttribute('aria-selected', uno); b2.setAttribute('aria-selected', !uno);
+
+  map.closePopup();
+  if (uno) { map.removeLayer(capaEmpresas); capaProvincia.addTo(map); }
+  else     { map.removeLayer(capaProvincia); capaEmpresas.addTo(map); }
+
+  // Leaflet se rompe si el contenedor cambió de tamaño: hay que recalcular.
+  setTimeout(() => {
+    map.invalidateSize();
+    if (uno) {
+      map.fitBounds([[TRES_ARROYOS.lat, TRES_ARROYOS.lng], [LA_PLATA.lat, LA_PLATA.lng]], { padding: [40, 40] });
+    } else {
+      map.setView([TRES_ARROYOS.lat, TRES_ARROYOS.lng], 15); // zoom profundo en Tres Arroyos
+    }
+  }, 60);
+}
+document.getElementById('tab-btn-1').addEventListener('click', () => mostrarPestana(1));
+document.getElementById('tab-btn-2').addEventListener('click', () => mostrarPestana(2));
+window.addEventListener('resize', () => map.invalidateSize());
+
+/* =====================================================================
+   5) MODAL
+   ===================================================================== */
+const modal = document.getElementById('modal');
+function abrirModal(e) {
+  document.getElementById('m-nombre').textContent = e.nombre;
+  document.getElementById('m-desc').textContent = e.descripcion;
+  document.getElementById('m-fotos').href = e.fotos;
+  document.getElementById('m-docs').href  = e.docs;
+  document.getElementById('m-web').href   = e.web;
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarModal() { modal.classList.add('hidden'); document.body.style.overflow = ''; }
+document.getElementById('m-cerrar').addEventListener('click', cerrarModal);
+modal.addEventListener('click', ev => { if (ev.target === modal) cerrarModal(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarModal(); });
+
+/* =====================================================================
+   6) VIDEO DE LA MUESTRA  ✏️✏️✏️
+   Completá UNA sola de las tres opciones (las otras dejalas vacías ""):
+   - youtubeId : el código del video de YouTube. Ej: de https://youtu.be/AbC123xyz  →  "AbC123xyz"
+                 (RECOMENDADO: subilo como "No listado"; carga bien con datos móviles).
+   - driveId   : el código del archivo en Drive. Ej: de .../file/d/1AbCdEf/view  →  "1AbCdEf"
+                 (el archivo debe estar compartido como "Cualquier persona con el enlace").
+   - archivo   : nombre de un .mp4 guardado en la misma carpeta que este archivo. Ej: "muestra.mp4"
+                 (ojo: si pesa mucho, tarda en cargar en el celular).
+   ===================================================================== */
+const VIDEO = { youtubeId: "Pjc9Y2HEm4s", driveId: "", archivo: "", vertical: true };
+
+(function montarVideo() {
+  const box = document.getElementById('video-box');
+  if (VIDEO.vertical) box.className = 'mt-3 mx-auto max-w-[340px] rounded-xl overflow-hidden border border-slate-300 bg-ink shadow-sm aspect-[9/16]';
+  const iframe = src => `<iframe src="${src}" class="w-full h-full" allowfullscreen
+      allow="accelerometer; autoplay; encrypted-media; picture-in-picture" title="Video de la muestra"></iframe>`;
+  if (VIDEO.youtubeId)      box.innerHTML = iframe(`https://www.youtube-nocookie.com/embed/${VIDEO.youtubeId}`);
+  else if (VIDEO.driveId)   box.innerHTML = iframe(`https://drive.google.com/file/d/${VIDEO.driveId}/preview`);
+  else if (VIDEO.archivo)   box.innerHTML = `<video src="${VIDEO.archivo}" controls playsinline preload="metadata" class="w-full h-full"></video>`;
+  else box.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white/70 text-sm text-center px-6">Acá va el video de la muestra.<br>Pegá el código en la constante VIDEO del archivo.</div>';
+})();
+
+/* Vista inicial */
+mostrarPestana(1);
+</script>
+</body>
+</html>
