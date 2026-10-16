@@ -256,7 +256,7 @@ const EMPRESAS = [
   {
     nombre: "Los Grandes Almacenes El ABC",
     lat: -38.38136360745744, lng: -60.27467612274962,
-    portada: "fotos/abc-portada.jpeg",
+    portada: "fotos/abc-portada.jpg",
     portadaPie: "Edificio de los Grandes Almacenes El ABC, inaugurado en 1934.",
     direccion: "Esquina de 25 de Mayo, Maipú y Chacabuco.",
     descripcion: "Los Grandes Almacenes El ABC, de Cabañas Hermanos, fueron uno de los comercios más importantes y emblemáticos de Tres Arroyos y la región durante el siglo XX. Nacieron en 1916 como una pequeña ferretería y llegaron a atender a más de 10.000 clientes.",
@@ -269,11 +269,13 @@ const EMPRESAS = [
         texto: "La empresa tenía 60 trabajadores, una flota de 6 autocamiones y 9 carros de reparto. El edificio contaba con comodidades para el personal, como sanitarios, un jardín y una plaza de ejercicios físicos.\n\nÁngel L. Cabañas destinó 25 hectáreas de su propiedad, a orillas del arroyo Tres Arroyos, para crear el Parque Cabañas, un parque público con árboles, viveros e invernáculos. La firma también construyó y administró el único hotel sobre la playa de Claromecó, pensado para impulsar el turismo de verano.\n\nLa conducción de los hermanos Cabañas unía el desarrollo comercial con la responsabilidad social y el progreso de la zona." }
     ],
     galeria: [
-      { src: "fotos/abc-2.jpeg", pie: "Escribí acá el pie de la foto 2" },
-      { src: "fotos/abc-3.jpeg", pie: "Escribí acá el pie de la foto 3" }
+      { src: "fotos/abc-2.jng", pie: "Foto de la actualidad del lugar" },
+      { src: "fotos/abc-3.png", pie: "Fotografía de 1919, cuando la empresa estaba dando sus primeros pasos" },
+      { src: "fotos/abc-4.png", pie: "Entre muchos otros productos, El ABC vendía las cocinas y salamandras Istilart" },
+      { src: "fotos/abc-5.png", pie: "Integrantes del equipo de trabajo" },
+      { src: "fotos/abc-6.png", pie: "Abarcó, en un período de su historia, el rubro automóviles como agencia de la marca Wippet" }
     ],
     recortes: [
-      { src: "fotos/abc-diario-1.jpeg", pie: "El Periodista, noviembre 2008" }
     ],
     documentos: [
       { titulo: "Ver dossier completo (PDF y Fotos)", url: "https://drive.google.com/drive/folders/1yNk7iBIhPU9zx-hYTBFVWyZiftSzDpeG" }
@@ -300,12 +302,10 @@ const EMPRESAS = [
         texto: "La sede central, de 1920, es de estilo académico francés y está frente a la Plaza San Martín. Fue declarada de interés histórico municipal en 1967 y es Monumento Histórico Provincial, por lo que no se puede modificar su estructura original.\n\nTras la liquidación de la cooperativa, en 2004 el edificio fue comprado en subasta por el grupo privado Lifla S.A. por $495.000, superando la propuesta del Municipio, que quería instalar allí dependencias judiciales. Hoy no tiene uso comercial ni institucional, y la Asociación Amigos del Patrimonio de Tres Arroyos (APTA) reclama por su deterioro." }
     ],
     galeria: [
-      { src: "fotos/prevision-2.jpeg", pie: "Escribí acá el pie de la foto 2" },
+      { src: "fotos/prevision-2.jpg", pie: "Escribí acá el pie de la foto 2" },
       { src: "fotos/prevision-3.jpeg", pie: "Escribí acá el pie de la foto 3" }
     ],
-    recortes: [
-      { src: "fotos/prevision-diario-1.jpeg", pie: "Escribí acá el diario y la fecha" }
-    ],
+    recortes: [],
     documentos: [],
     enlaces: [
       { titulo: "Leer: Hace 111 años se fundaba La Previsión (LU24)", url: "https://www.lu24.com.ar/locales/hace-111-anos-un-dia-como-hoy-se-fundaba-la-prevision" },
@@ -356,7 +356,7 @@ const pin = color => L.divIcon({
 /* --- Capa 1: ubicación provincial --- */
 const capaProvincia = L.layerGroup();
 L.marker([TRES_ARROYOS.lat, TRES_ARROYOS.lng], { icon: pin('#14284B') })
-  .bindPopup('<b>Av. Ravadavia 514 (CENS 451)</b>').addTo(capaProvincia);
+  .bindPopup('<b>Av. Rivadavia 514 (CENS 451)</b>').addTo(capaProvincia);
 L.marker([LA_PLATA.lat, LA_PLATA.lng], { icon: pin('#B8892B') })
   .bindPopup('<b>Lugar de la presentación</b>').addTo(capaProvincia);
 L.polyline(
